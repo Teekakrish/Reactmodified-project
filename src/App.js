@@ -1,27 +1,34 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import "./App.css"; // Ensure TailwindCSS is properly integrated
+import React, { useState, useEffect, useMemo, useCallback, useContext } from 'react';
+import './App.css'; // Ensure TailwindCSS is properly integrated
+import { createContext } from 'react';
 
+// Context for dark mode
+const DarkModeContext = createContext();
+
+const useDarkMode = () => useContext(DarkModeContext);
+
+// User Dashboard App Component
 const App = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [companyFilter, setCompanyFilter] = useState("");
-  const [sortOrder, setSortOrder] = useState("asc"); // Sorting by name
+  const [search, setSearch] = useState('');
+  const [companyFilter, setCompanyFilter] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc'); // Sorting by name
   const [totalPages, setTotalPages] = useState(0);
-  const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("darkMode") === "true" || false
-  );
+  const [sortCriteria, setSortCriteria] = useState('name'); // Sorting by name or company
+  const [darkMode, setDarkMode] = useDarkMode(); // Dark Mode context hook
 
   const usersPerPage = 5;
 
+  // Fetching Users
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("https://jsonplaceholder.typicode.com/users");
+        const response = await fetch('https://jsonplaceholder.typicode.com/users');
         if (!response.ok) {
-          throw new Error("Failed to fetch data.");
+          throw new Error('Failed to fetch data.');
         }
         const data = await response.json();
         setUsers(data);
@@ -36,6 +43,7 @@ const App = () => {
     fetchUsers();
   }, []);
 
+  // Scroll event for infinite scrolling
   useEffect(() => {
     const handleScroll = () => {
       if (
@@ -47,33 +55,12 @@ const App = () => {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [currentPage, totalPages]);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const searchParam = params.get("search");
-    const companyParam = params.get("company");
-    if (searchParam) setSearch(searchParam);
-    if (companyParam) setCompanyFilter(companyParam);
-  }, []);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    localStorage.setItem("darkMode", darkMode); // Save dark mode preference
-  }, [darkMode]);
-
-  const toggleDarkMode = () => {
-    setDarkMode((prevMode) => !prevMode);
-  };
 
   // Debounce search input using useCallback
   const debounceSearch = useCallback(
@@ -104,15 +91,16 @@ const App = () => {
   // Sorting the filtered users
   const sortedUsers = useMemo(() => {
     return filteredUsers.sort((a, b) => {
-      const nameA = a.name.toLowerCase();
-      const nameB = b.name.toLowerCase();
-      if (sortOrder === "asc") {
-        return nameA.localeCompare(nameB);
+      const aValue = sortCriteria === 'name' ? a.name.toLowerCase() : a.company.name.toLowerCase();
+      const bValue = sortCriteria === 'name' ? b.name.toLowerCase() : b.company.name.toLowerCase();
+
+      if (sortOrder === 'asc') {
+        return aValue.localeCompare(bValue);
       } else {
-        return nameB.localeCompare(nameA);
+        return bValue.localeCompare(aValue);
       }
     });
-  }, [filteredUsers, sortOrder]);
+  }, [filteredUsers, sortOrder, sortCriteria]);
 
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
@@ -123,6 +111,10 @@ const App = () => {
       const newPage = prevPage + direction;
       return Math.min(Math.max(newPage, 1), totalPages);
     });
+  };
+
+  const toggleDarkMode = () => {
+    setDarkMode((prevMode) => !prevMode);
   };
 
   if (loading) {
@@ -143,7 +135,7 @@ const App = () => {
 
   return (
     <div
-      className={`min-h-screen p-5 ${darkMode ? "bg-gray-900 text-gray-300" : "bg-white text-black"}`}
+      className={`min-h-screen p-5 ${darkMode ? 'bg-gray-900 text-gray-300' : 'bg-white text-black'}`}
     >
       <div className="flex justify-between items-center mb-12 flex-col sm:flex-row">
         <h1 className="text-3xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 via-purple-600 to-pink-600 text-center sm:text-left">
@@ -211,10 +203,16 @@ const App = () => {
       {/* Sorting Button */}
       <div className="flex justify-between items-center mt-6 mb-4">
         <button
-          onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
           className="px-4 py-2 bg-gradient-to-r from-teal-500 via-green-400 to-blue-500 text-white rounded-full hover:bg-gradient-to-l transition-all duration-300"
         >
-          Sort by Name ({sortOrder === "asc" ? "A-Z" : "Z-A"})
+          Sort by {sortCriteria === 'name' ? 'Name' : 'Company'} ({sortOrder === 'asc' ? 'A-Z' : 'Z-A'})
+        </button>
+        <button
+          onClick={() => setSortCriteria(sortCriteria === 'name' ? 'company' : 'name')}
+          className="px-4 py-2 bg-gradient-to-r from-teal-500 via-green-400 to-blue-500 text-white rounded-full hover:bg-gradient-to-l transition-all duration-300"
+        >
+          Sort by {sortCriteria === 'name' ? 'Company' : 'Name'}
         </button>
       </div>
 
@@ -242,4 +240,26 @@ const App = () => {
   );
 };
 
-export default App;
+// Dark Mode Provider
+const DarkModeProvider = ({ children }) => {
+  const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('darkMode', darkMode);
+  }, [darkMode]);
+
+  return (
+    <DarkModeContext.Provider value={[darkMode, setDarkMode]}>
+      {children}
+    </DarkModeContext.Provider>
+  );
+};
+
+export default function WrappedApp() {
+  return (
+    <DarkModeProvider>
+      <App />
+    </DarkModeProvider>
+  );
+}

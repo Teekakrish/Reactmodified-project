@@ -81,3 +81,79 @@
   border-radius: 4px;
   width: 200px;
 }
+/* Basic Reset */
+* {
+  @apply m-0 p-0 box-border;
+}
+
+/* General Container */
+.container {
+  @apply w-11/12 mx-auto p-5;
+}
+
+/* Header */
+.header {
+  @apply text-center text-3xl mb-6;
+}
+
+/* Loading and Error States */
+.loading, .error {
+  @apply text-center text-xl mt-6 text-red-500;
+}
+
+/* User Cards */
+.user-cards {
+  @apply flex flex-wrap justify-around gap-5;
+}
+
+.user-card {
+  @apply w-48 p-5 border border-gray-300 rounded-lg shadow-md text-center bg-white;
+}
+
+.user-avatar {
+  @apply w-24 h-24 rounded-full mx-auto mb-4 transform transition-transform duration-300 hover:scale-125 hover:shadow-xl;
+}
+
+.user-name {
+  @apply text-xl font-semibold mb-2 text-indigo-300 hover:text-white;
+}
+
+.user-email, .user-phone, .user-company {
+  @apply text-sm mb-1 text-gray-400 hover:text-white;
+}
+
+/* Filter Container */
+.filter-container {
+  @apply mb-6 flex flex-col sm:flex-row sm:space-x-4 sm:mb-8;
+}
+
+.filter-item {
+  @apply flex flex-col gap-2;
+}
+
+.search-input, .company-select {
+  @apply p-3 border border-gray-300 rounded-lg w-full sm:w-60 md:w-1/3;
+}
+
+/* Dark Mode */
+.dark .user-card {
+  @apply bg-gray-800 text-gray-300;
+}
+
+.dark .user-name, .dark .user-email, .dark .user-phone, .dark .user-company {
+  @apply text-gray-400 hover:text-white;
+}
+
+/* Pagination Button Styles */
+.pagination-button {
+  @apply px-6 py-3 bg-gradient-to-r from-teal-500 via-green-400 to-blue-500 text-white rounded-full disabled:opacity-50 hover:bg-gradient-to-l transition-all duration-300;
+}
+
+.pagination-text {
+  @apply text-lg font-semibold text-indigo-500;
+}
+
+/* Sort Button Styles */
+.sort-button {
+  @apply px-4 py-2 bg-gradient-to-r from-teal-500 via-green-400 to-blue-500 text-white rounded-full hover:bg-gradient-to-l transition-all duration-300;
+}
